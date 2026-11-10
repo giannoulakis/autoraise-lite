@@ -33,7 +33,7 @@
 #define STACK_THRESHOLD 20
 
 // The window under the mouse is raised once the mouse stops for one poll interval
-#define POLL_MILLIS 100
+#define POLL_MILLIS 50
 // Hold this key to temporarily disable AutoRaise
 #define DISABLE_KEY kCGEventFlagMaskControl
 
@@ -93,6 +93,8 @@ static NSString * const NoTitle = @"";
 static CGPoint oldPoint = {0, 0};
 static bool propagateMouseMoved = false;
 static bool spaceHasChanged = false;
+static bool enabled = true; // toggled from the menu bar icon, always on at launch
+static NSStatusItem * statusItem = NULL;
 static int ignoreTimes = 0;
 static int raiseTimes = 0;
 
@@ -494,6 +496,12 @@ static MDWorkspaceWatcher * workspaceWatcher = NULL;
     spaceChanged();
 }
 
+- (void)toggleEnabled:(NSMenuItem *)item {
+    enabled = !enabled;
+    item.state = enabled ? NSControlStateValueOn : NSControlStateValueOff;
+    statusItem.button.appearsDisabled = !enabled;
+}
+
 - (void)onTick:(NSNumber *)timerInterval {
     [self performSelector: @selector(onTick:)
         withObject: timerInterval
@@ -516,6 +524,8 @@ void AXCallback(AXObserverRef observer, AXUIElementRef _element, CFStringRef not
 }
 
 void onTick() {
+    if (!enabled) { return; }
+
     // determine if mouseMoved
     CGEventRef _event = CGEventCreate(NULL);
     CGPoint mousePoint = CGEventGetLocation(_event);
@@ -741,7 +751,19 @@ int main(int argc, const char * argv[]) {
         [workspaceWatcher onTick: [NSNumber numberWithFloat: POLL_MILLIS/1000.0]];
 
         findDockApplication();
-        [[NSApplication sharedApplication] run];
+        NSApplication * app = [NSApplication sharedApplication];
+
+        statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength: NSSquareStatusItemLength];
+        statusItem.button.image = [NSImage imageWithSystemSymbolName: @"balloon"
+            accessibilityDescription: @"AutoRaise Lite"];
+        NSMenu * menu = [[NSMenu alloc] init];
+        NSMenuItem * enabledItem = [menu addItemWithTitle: @"Enabled"
+            action: @selector(toggleEnabled:) keyEquivalent: @""];
+        enabledItem.target = workspaceWatcher;
+        enabledItem.state = NSControlStateValueOn;
+        statusItem.menu = menu;
+
+        [app run];
     }
     return 0;
 }

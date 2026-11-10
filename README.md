@@ -1,11 +1,12 @@
 # AutoRaise Lite
 
-A stripped-down fork of [AutoRaise](https://github.com/sbmpost/AutoRaise) v5.7 by sbmpost. It raises and focuses the window under the mouse once the pointer rests on it. There is no menu bar icon, settings screen, config file or command line option: the behaviour is fixed in the code.
+A stripped-down fork of [AutoRaise](https://github.com/sbmpost/AutoRaise) v5.7 by sbmpost. It raises and focuses the window under the mouse once the pointer rests on it. There is no settings screen, config file or command line option: the behaviour is fixed in the code.
 
 ## Behaviour
 
-- Checks the mouse every 100ms (`POLL_MILLIS`) and raises the window under it once the pointer has not moved for one check.
+- Checks the mouse every 50ms (`POLL_MILLIS`) and raises the window under it once the pointer has not moved for one check.
 - Hold **Control** to temporarily disable it (`DISABLE_KEY`).
+- The balloon icon in the menu bar has an **Enabled** toggle. The icon dims while disabled. It always starts enabled.
 - Raises the window under the mouse after a space change.
 - Leaves windows alone while a mouse button is down (dragging, resizing), while the Dock or Mission Control is active, over menus and the menu bar, for 3 checks after Cmd-Tab, for windows inside the focused window, and for windows that were just closed or are parked offscreen.
 
