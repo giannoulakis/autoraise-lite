@@ -3,17 +3,17 @@
 <plist version="1.0">
   <dict>
     <key>CFBundleExecutable</key>
-    <string>AutoRaise</string>
+    <string>AutoRaiseLite</string>
     <key>CFBundleIdentifier</key>
-    <string>nl.postware.autoraise</string>
+    <string>io.github.giannoulakis.autoraise-lite</string>
     <key>CFBundleGetInfoString</key>
-    <string>Copyright © 2026 sbmpost</string>
+    <string>Copyright © 2026 sbmpost, modified by giannoulakis</string>
     <key>CFBundleShortVersionString</key>
     <string>5.7</string>
     <key>CFBundleIconFile</key>
     <string>AutoRaise</string>
     <key>CFBundleName</key>
-    <string>AutoRaise</string>
+    <string>AutoRaise Lite</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSupportedPlatforms</key>

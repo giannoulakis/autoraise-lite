@@ -1,35 +1,35 @@
-SKYLIGHT_AVAILABLE := $(shell test -d /System/Library/PrivateFrameworks/SkyLight.framework && echo 1 || echo 0)
-override CXXFLAGS += -O2 -Wall -fobjc-arc -D"NS_FORMAT_ARGUMENT(A)=" -D"SKYLIGHT_AVAILABLE=$(SKYLIGHT_AVAILABLE)"
+override CXXFLAGS += -O2 -Wall -fobjc-arc -D"NS_FORMAT_ARGUMENT(A)="
+APP := AutoRaiseLite.app
+LABEL := io.github.giannoulakis.autoraise-lite
+AGENT := $(HOME)/Library/LaunchAgents/$(LABEL).plist
 
-.PHONY: all clean install build run debug update
+.PHONY: all clean install uninstall
 
-all: AutoRaise AutoRaise.app
+all: $(APP)
 
 clean:
-	rm -f AutoRaise
-	rm -rf AutoRaise.app
+	rm -rf AutoRaiseLite $(APP)
 
-install: AutoRaise.app
-	rm -rf /Applications/AutoRaise.app
-	cp -r AutoRaise.app /Applications/
+AutoRaiseLite: AutoRaise.mm
+	clang++ $(CXXFLAGS) -o $@ $^ -framework AppKit
 
-AutoRaise: AutoRaise.mm
-        ifeq ($(SKYLIGHT_AVAILABLE), 1)
-	    g++ $(CXXFLAGS) -o $@ $^ -framework AppKit -F /System/Library/PrivateFrameworks -framework SkyLight
-        else
-	    g++ $(CXXFLAGS) -o $@ $^ -framework AppKit
-        endif
+# Ad hoc signed: macOS asks for Accessibility again whenever the binary changes
+$(APP): AutoRaiseLite Info.plist AutoRaise.icns
+	rm -rf $@
+	mkdir -p $@/Contents/MacOS $@/Contents/Resources
+	cp AutoRaiseLite $@/Contents/MacOS/
+	cp Info.plist $@/Contents/
+	cp AutoRaise.icns $@/Contents/Resources/
+	codesign --force --sign - $@
 
-AutoRaise.app: AutoRaise Info.plist AutoRaise.icns
-	./create-app-bundle.sh
+install: $(APP)
+	launchctl bootout gui/$$(id -u)/$(LABEL) 2>/dev/null || true
+	rm -rf /Applications/$(APP)
+	cp -R $(APP) /Applications/
+	cp $(LABEL).plist $(AGENT)
+	launchctl bootstrap gui/$$(id -u) $(AGENT)
 
-build: clean
-	make CXXFLAGS="-DOLD_ACTIVATION_METHOD -DEXPERIMENTAL_FOCUS_FIRST"
-
-run: build
-	./AutoRaise -focusDelay 1
-
-debug: build
-	./AutoRaise -focusDelay 1 -verbose 1
-
-update: build install
+uninstall:
+	launchctl bootout gui/$$(id -u)/$(LABEL) 2>/dev/null || true
+	rm -f $(AGENT)
+	rm -rf /Applications/$(APP)
